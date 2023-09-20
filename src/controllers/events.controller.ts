@@ -41,32 +41,36 @@ export const getAllEvents = async (req: Request, res: Response) => {
     }
 };
 
-// Pass maxDistanceMeters as a query parameter
+// TODO: Pass maxDistanceMeters as a query parameter
 export const getEventsNearby = async (req: Request, res: Response) => {
     try {
-        const { latitude, longitude } = req.body;
-        console.log('latitude', latitude);
-        console.log('longitude', longitude);
+        const { latitude, longitude, interestTitle,maxDistance } = req.body;
 
         if (!latitude || !longitude) {
             return res.status(400).json({ error: 'Missing latitude or longitude parameters' });
         }
 
-        const events = await EventModel.find({
+        let query: any = {
             'location.coordinates': {
                 $nearSphere: {
                     $geometry: {
                         type: 'Point',
                         coordinates: [parseFloat(longitude as string), parseFloat(latitude as string)],
                     },
-                    $maxDistance: 16093.4, // 10 miles in meters
+                    $maxDistance: maxDistance, // 10 miles in meters
                 },
             },
-        });
+        };
+
+        if (interestTitle) {
+            query['interests.title'] = new RegExp(interestTitle, 'i');
+        }
+
+        const events = await EventModel.find(query);
 
         res.status(200).json(events);
     } catch (error) {
         console.error('Error fetching nearby events:', error);
-        // res.status(500).json({ error: 'Internal Server Error', message: error.message });
+        res.status(500).json({ error: 'Internal Server Error', message: error });
     }
 };
