@@ -37,6 +37,7 @@ app.use(express.static('static'));
 
 // Required routes
 require('./routes/events.routes.ts')(app);
+require('./routes/interests.routes.ts')(app);
 
 app.listen(process.env.PORT || 3000, () => {
     console.log('Server is listening on port 3000');
