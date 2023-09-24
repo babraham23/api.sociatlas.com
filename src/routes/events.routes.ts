@@ -11,4 +11,7 @@ module.exports = function (app: any) {
 
     // Get events within a certain distance
     app.post('/api/getEventsNearby', events.getEventsNearby);
+
+    // Return all interest
+    app.get('/api/getAllInterests', events.getAllInterests);
 };

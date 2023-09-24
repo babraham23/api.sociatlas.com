@@ -41,10 +41,9 @@ export const getAllEvents = async (req: Request, res: Response) => {
     }
 };
 
-// TODO: Pass maxDistanceMeters as a query parameter
 export const getEventsNearby = async (req: Request, res: Response) => {
     try {
-        const { latitude, longitude, interestTitle,maxDistance } = req.body;
+        const { latitude, longitude, interestTitle, maxDistance } = req.body;
 
         if (!latitude || !longitude) {
             return res.status(400).json({ error: 'Missing latitude or longitude parameters' });
@@ -72,5 +71,35 @@ export const getEventsNearby = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error fetching nearby events:', error);
         res.status(500).json({ error: 'Internal Server Error', message: error });
+    }
+};
+
+export const getAllInterests = async (req: Request, res: Response) => {
+    try {
+        // Use the aggregation framework to group and sort the interests
+        const aggregatedInterests = await EventModel.aggregate([
+            { $unwind: '$interests' },
+            {
+                $group: {
+                    _id: '$interests.title',
+                    count: { $sum: 1 },
+                    icon: { $first: '$interests.icon' },
+                    id: { $first: '$interests.id' },
+                },
+            },
+            { $sort: { count: -1 } },
+        ]);
+
+        // Format the aggregated results to match the expected output
+        const formattedInterests = aggregatedInterests.map((interest) => ({
+            title: interest._id,
+            count: interest.count,
+            icon: interest.icon,
+            id: interest.id,
+        }));
+
+        return res.status(200).send(formattedInterests);
+    } catch (error) {
+        return res.status(500).send({ message: 'An error occurred', error });
     }
 };
