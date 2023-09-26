@@ -2,6 +2,7 @@
 
 module.exports = function (app: any) {
     const events = require('../controllers/events.controller');
+    const documents = require('../controllers/documents.controller');
 
     // Create a new event
     app.post('/api/createEvent', events.createEvent);
@@ -14,4 +15,7 @@ module.exports = function (app: any) {
 
     // Return all interest
     app.get('/api/getAllInterests', events.getAllInterests);
+
+    // Post image from document
+    app.post('/api/documents/postImage', documents.postImage);
 };

@@ -69,8 +69,14 @@ export interface IEvent extends Document {
         address: string;
         coordinates: number[];  // Changed from latitude and longitude to coordinates array
     };
-    image: string;
-    video: string;
+    image: {
+        url: String, // URL of the image in blob storage
+        eventId: Schema.Types.ObjectId, // Reference to the associated event
+    },
+    video: {
+        url: String, // URL of the video in blob storage
+        eventId: Schema.Types.ObjectId, // Reference to the associated event
+    },
     organizer: {
         name: string;
         email: string;
