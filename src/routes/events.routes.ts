@@ -5,17 +5,17 @@ module.exports = function (app: any) {
     const documents = require('../controllers/documents.controller');
 
     // Create a new event
-    app.post('/api/createEvent', events.createEvent);
+    app.post('/api/events/createEvent', events.createEvent);
 
     // Get all events
-    app.get('/api/getAllEvents', events.getAllEvents);
+    app.get('/api/events/getAllEvents', events.getAllEvents);
 
     // Get events within a certain distance
-    app.post('/api/getEventsNearby', events.getEventsNearby);
+    app.post('/api/events/getEventsNearby', events.getEventsNearby);
 
     // Return all interest
-    app.get('/api/getAllInterests', events.getAllInterests);
+    app.get('/api/events/getAllInterests', events.getAllInterests);
 
     // Post image from document
-    app.post('/api/documents/postImage', documents.postImage);
+    app.post('/api/events/uploadImageToBlob', documents.uploadImageToBlob);
 };

@@ -2,27 +2,6 @@ import { Request, Response } from 'express';
 const { BlobServiceClient } = require('@azure/storage-blob');
 import formidable from 'formidable';
 
-export const postImage = async (req: Request, res: Response) => {
-    const form = formidable({ multiples: true });
-
-    form.parse(req, async function (err, fields, files: any) {
-        if (!err) {
-            const file: any = files.image[0];
-            const filePath = file.filepath;
-            const fileName = file.originalFilename;
-            console.log('FILE -->', file)
-            uploadToBlobStorage('events', filePath, fileName)
-                .then((url: string) => {
-                    return res.status(200).json({ data: url });
-                })
-                .catch((err: any) => {
-                    console.log('ERROR -->', err);
-                    return res.status(500).json({ error: err });
-                });
-        }
-    });
-};
-
 let AZURE_STORAGE_CONNECTION_STRING =
     'DefaultEndpointsProtocol=https;AccountName=sociatlasstorage;AccountKey=PgICERpfWhJmaxS233hg5bLV3Oo6NWkHCGKxb83CWz6Hgm8n++psSEqsz7ppXSMsgI5nqIVZtp9m+AStT0+/RQ==;EndpointSuffix=core.windows.net';
 
@@ -41,3 +20,28 @@ async function uploadToBlobStorage(containerName: string, filePath: string, file
         throw error;
     }
 }
+
+export const uploadImageToBlob = async (req: Request, res: Response) => {
+    const form = formidable({ multiples: true });
+
+    form.parse(req, async function (err, fields, files: any) {
+        if (!err) {
+            const file: any = files.image[0];
+            const filePath = file.filepath;
+            const fileName = file.originalFilename;
+            uploadToBlobStorage('events', filePath, fileName)
+                .then((url: string) => {
+                    return res.status(200).json({ data: url });
+                })
+                .catch((err: any) => {
+                    console.log('ERROR -->', err);
+                    return res.status(500).json({ error: err });
+                });
+        }
+    });
+};
+
+
+/*
+Upload block blob myImage.jpg successfully 69bcb566-c01e-0012-5c9a-f0d9f0000000
+*/
