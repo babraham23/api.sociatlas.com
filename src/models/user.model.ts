@@ -16,7 +16,7 @@ const UserSchema = new Schema({
     },
     city: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
     },
     email: {
@@ -32,8 +32,8 @@ const UserSchema = new Schema({
     },
     phonenumber: {
         type: String,
-        required: true,
-        unique: true,
+        required: false,
+        unique: false,
         trim: true,
     },
     profilePic: {
@@ -46,6 +46,10 @@ const UserSchema = new Schema({
         required: true,
         select: false, // By default don't return passwords
     },
+    dateOfBirth: {
+        type: Date,
+        required: true, // set to false if it's optional
+    },
 });
 
 // Create and export the User model
@@ -57,6 +61,7 @@ export interface IUser extends Document {
     phonenumber: string;
     profilePic: string | null;
     password: string;
+    dateOfBirth: Date;
 }
 
 export const UserModel = mongoose.model<IUser>('User', UserSchema);
