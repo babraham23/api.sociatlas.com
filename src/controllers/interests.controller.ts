@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { IInterest, InterestModel } from '../models/interests.model';
+import { EventModel } from '../models/events.model'; // Assuming you have an EventModel
 
 export const createInterest = async (req: Request, res: Response) => {
     try {
@@ -53,5 +54,52 @@ export const getInterests = async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'An error occurred while fetching interests' });
+    }
+};
+
+export const getMostUsedInterests = async (req: Request, res: Response) => {
+    try {
+        // Using MongoDB's aggregation framework to get most used interests
+        const mostUsedInterests = await EventModel.aggregate([
+            // Unwind the interests array into a stream of documents
+            { $unwind: '$interests' },
+            // Group by interests title and count occurrences
+            {
+                $group: {
+                    _id: '$interests.title',
+                    count: { $sum: 1 },
+                    icon: { $first: '$interests.icon' },
+                    id: { $first: '$interests.id' },
+                    title: { $first: '$interests.title' },
+                    _interestId: { $first: '$interests._id' },
+                },
+            },
+            // Sort by count descending to get most used interests first
+            { $sort: { count: -1 } },
+            // Optionally limit the number of results
+            // { $limit: 10 },
+            // Project the desired fields
+            {
+                $project: {
+                    _id: '$_interestId',
+                    title: 1,
+                    icon: 1,
+                    id: 1,
+                },
+            },
+        ]);
+
+        // Send the response back to the client
+        res.status(200).json({
+            status: 'success',
+            data: mostUsedInterests,
+        });
+    } catch (error) {
+        // Handle errors
+        console.error('Error fetching interests:', error);
+        res.status(500).json({
+            status: 'failure',
+            message: 'An error occurred while fetching the interests',
+        });
     }
 };

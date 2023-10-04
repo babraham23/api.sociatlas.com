@@ -6,4 +6,7 @@ module.exports = function (app: any) {
 
     // User login
     app.post('/api/user/loginUser', user.loginUser);
+
+    // Login user with bearer token
+    app.post('/api/user/loginUserWithToken', user.loginUserWithToken);
 };

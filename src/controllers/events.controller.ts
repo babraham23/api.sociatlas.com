@@ -19,7 +19,7 @@ export const createEvent = async (req: Request, res: Response) => {
         const savedEvent = await newEvent.save();
 
         // Respond with the saved event data
-        res.status(201).json(savedEvent);
+        res.status(200).json(savedEvent);
     } catch (error) {
         // Handle any errors that occur during the creation process
         console.error('Error creating event:', error);

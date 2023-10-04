@@ -13,25 +13,18 @@ const LocationSchema = new Schema({
     coordinates: {
         type: [Number], // [longitude, latitude]
         required: true,
-        index: '2dsphere'
+        index: '2dsphere',
     },
 });
 
 LocationSchema.index({ latitude: 1, longitude: 1 }, { background: true });
 
-
 // Define the organizer subdocument schema
 const OrganizerSchema = new Schema({
     name: String,
-    email: String,
     avatar: String,
-});
-
-// Define the social media subdocument schema
-const SocialMediaSchema = new Schema({
-    facebook: String,
-    twitter: String,
-    instagram: String,
+    _id: String,
+    username: String
 });
 
 // Define the main event schema
@@ -48,7 +41,6 @@ const EventSchema = new Schema({
     video: String, // Assuming the video is stored as a URL
     organizer: OrganizerSchema,
     price: Number,
-    socialMedia: SocialMediaSchema,
     additionalInfo: String,
 });
 
@@ -67,29 +59,24 @@ export interface IEvent extends Document {
     }[];
     location: {
         address: string;
-        coordinates: number[];  // Changed from latitude and longitude to coordinates array
+        coordinates: number[]; // Changed from latitude and longitude to coordinates array
     };
     image: {
-        url: String, // URL of the image in blob storage
-        eventId: Schema.Types.ObjectId, // Reference to the associated event
-    },
+        url: String; // URL of the image in blob storage
+        eventId: Schema.Types.ObjectId; // Reference to the associated event
+    };
     video: {
-        url: String, // URL of the video in blob storage
-        eventId: Schema.Types.ObjectId, // Reference to the associated event
-    },
+        url: String; // URL of the video in blob storage
+        eventId: Schema.Types.ObjectId; // Reference to the associated event
+    };
     organizer: {
         name: string;
-        email: string;
+        _id: string;
         avatar: string;
+        username: string;
     };
     price: number;
-    socialMedia: {
-        facebook: string;
-        twitter: string;
-        instagram: string;
-    };
     additionalInfo: string;
 }
-
 
 export const EventModel = mongoose.model<IEvent>('Event', EventSchema);

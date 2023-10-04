@@ -18,4 +18,9 @@ module.exports = function (app: any) {
 
     // Post image from document
     app.post('/api/events/uploadImageToBlob', documents.uploadImageToBlob);
+
+    // deleteImageFromBlob
+    app.delete('/api/events/deleteImageFromBlob/:blobName', documents.deleteImageFromBlob);
 };
+
+

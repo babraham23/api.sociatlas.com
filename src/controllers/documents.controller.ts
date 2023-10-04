@@ -41,7 +41,25 @@ export const uploadImageToBlob = async (req: Request, res: Response) => {
     });
 };
 
+async function deleteBlob(containerName: string, blobName: string) {
+    try {
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        await blockBlobClient.delete();
+        console.log(`Blob ${blobName} deleted`);
+    } catch (error) {
+        console.log('ERROR -->', error);
+        throw error;
+    }
+}
 
-/*
-Upload block blob myImage.jpg successfully 69bcb566-c01e-0012-5c9a-f0d9f0000000
-*/
+export const deleteImageFromBlob = async (req: Request, res: Response) => {
+    try {
+        const { blobName } = req.params; // assuming that blobName is a path parameter
+        await deleteBlob('events', blobName);
+        return res.status(200).json({ message: 'Image deleted successfully' });
+    } catch (error) {
+        console.log('ERROR -->', error);
+        return res.status(500).json({ error: 'An error occurred while deleting the image' });
+    }
+};
