@@ -78,3 +78,70 @@ export const loginUserWithToken = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'An error occurred while logging in' });
     }
 };
+
+export const editUser = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+        const { name, username, dateOfBirth, location, email, password, profilePic } = req.body;
+
+        // Validate input - this might be more extensive based on your requirements
+        if (password && password.trim().length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+
+        // Ensure email format, and other fields validation as per your application logic...
+
+        const updates: any = {};
+        if (name) updates.name = name;
+        if (username) updates.username = username;
+        if (dateOfBirth) updates.dateOfBirth = dateOfBirth;
+        if (location) updates.location = location;
+        if (email) updates.email = email;
+
+        // Check if profilePic property exists in request body
+        if ('profilePic' in req.body) {
+            updates.profilePic = profilePic;
+        }
+        
+        // If updating password, ensure it's hashed before saving
+        if (password) {
+            updates.password = await bcrypt.hash(password, 10);
+        }
+
+        const user = await UserModel.findByIdAndUpdate(userId, updates, {
+            new: true,
+            runValidators: true,
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.status(200).json({ message: 'User updated successfully', user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while updating the user' });
+    }
+};
+
+export const checkUsernameAvailability = async (req: Request, res: Response) => {
+    try {
+        const { username } = req.body;
+
+        // Validate input - ensure the username is not empty, etc.
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
+        }
+
+        const user = await UserModel.findOne({ username });
+
+        if (user) {
+            return res.status(400).json({ error: 'Username is already taken' });
+        }
+
+        res.status(200).json({ message: 'Username is available' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while checking username availability' });
+    }
+};

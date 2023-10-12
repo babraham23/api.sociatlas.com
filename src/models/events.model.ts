@@ -11,72 +11,75 @@ const InterestSchema = new Schema({
 const LocationSchema = new Schema({
     address: String,
     coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number],
         required: true,
         index: '2dsphere',
     },
 });
 
-LocationSchema.index({ latitude: 1, longitude: 1 }, { background: true });
-
-// Define the organizer subdocument schema
-const OrganizerSchema = new Schema({
+// Define the organizer and invitee subdocument schema
+const PersonSchema = new Schema({
+    _id: Schema.Types.Mixed, // To accommodate both string and number types
     name: String,
-    avatar: String,
-    _id: String,
-    username: String
+    username: String,
+    profilePic: String,
 });
 
 // Define the main event schema
 const EventSchema = new Schema({
-    id: String,
-    title: String,
+    title: { type: String, required: true },
     description: String,
-    date: Number,
-    maxCapacity: Number,
-    currentAttendees: Number,
-    interests: [InterestSchema],
+    date: { type: Number, required: true },
     location: { type: LocationSchema, required: true },
+    interests: [InterestSchema],
     image: String,
-    video: String, // Assuming the video is stored as a URL
-    organizer: OrganizerSchema,
-    price: Number,
+    isPrivate: Boolean,
+    invitees: [PersonSchema],
     additionalInfo: String,
+    maxCapacity: { type: Number, required: true },
+    price: { type: Number, required: true },
+    currentAttendees: [PersonSchema],
+    likedBy: [Schema.Types.Mixed], // To accommodate both string and number types
+    organizer: { type: PersonSchema, required: true },  // Adjusted to be an object and renamed
 });
 
-// Create and export the Event model
 export interface IEvent extends Document {
-    id: string;
     title: string;
     description: string;
     date: number;
-    maxCapacity: number;
-    currentAttendees: number;
+    location: {
+        address: string;
+        coordinates: number[];
+    };
     interests: {
         icon: string;
         title: string;
         id: number;
     }[];
-    location: {
-        address: string;
-        coordinates: number[]; // Changed from latitude and longitude to coordinates array
-    };
-    image: {
-        url: String; // URL of the image in blob storage
-        eventId: Schema.Types.ObjectId; // Reference to the associated event
-    };
-    video: {
-        url: String; // URL of the video in blob storage
-        eventId: Schema.Types.ObjectId; // Reference to the associated event
-    };
-    organizer: {
+    image: string;
+    isPrivate: boolean;
+    invitees: {
+        _id: string | number;
         name: string;
-        _id: string;
-        avatar: string;
         username: string;
-    };
-    price: number;
+        profilePic: string;
+    }[];
     additionalInfo: string;
+    maxCapacity: number;
+    price: number;
+    currentAttendees: {
+        _id: string | number;
+        name: string;
+        username: string;
+        profilePic: string;
+    }[];
+    likedBy: (string | number)[];
+    organizer: {  // Adjusted and renamed
+        _id: string | number;
+        name: string;
+        username: string;
+        profilePic: string;
+    };
 }
 
 export const EventModel = mongoose.model<IEvent>('Event', EventSchema);

@@ -14,7 +14,7 @@ const UserSchema = new Schema({
         unique: true,
         trim: true,
     },
-    city: {
+    location: {
         type: String,
         required: false,
         trim: true,
@@ -56,7 +56,7 @@ const UserSchema = new Schema({
 export interface IUser extends Document {
     name: string;
     username: string;
-    city: string;
+    location: string;
     email: string;
     phonenumber: string;
     profilePic: string | null;
