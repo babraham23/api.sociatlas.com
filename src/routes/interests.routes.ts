@@ -4,8 +4,8 @@ module.exports = function (app: any) {
     // Create a new interest
     app.post('/api/interests/createInterest', interests.createInterest);
 
-    // return interest by id, date or order
-    app.get('/api/interests/getInterests', interests.getInterests);
+    // // return interest by id, date or order
+    // app.get('/api/interests/getInterests', interests.getInterests);
 
     // getMostUsedInterests
     app.get('/api/interests/getMostUsedInterests', interests.getMostUsedInterests);

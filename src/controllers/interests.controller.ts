@@ -1,105 +1,67 @@
 import { Request, Response } from 'express';
-import { IInterest, InterestModel } from '../models/interests.model';
-import { EventModel } from '../models/events.model'; // Assuming you have an EventModel
+import { InterestModel, IInterest } from '../models/interests.model'; // Ensure correct import path
+import { EventModel } from '../models/events.model';
 
 export const createInterest = async (req: Request, res: Response) => {
     try {
-        // Destructure fields from request body
-        const { icon, title, id, likeCount } = req.body;
+        // Extract interest data from the request body
+        const interestData: IInterest = req.body;
 
-        // Validate required fields
-        if (!icon || !title || id === undefined) {
-            return res.status(400).json({ error: 'icon, title, and id are required fields.' });
+        // Validate the interest data (Add additional validation as needed)
+        if (!interestData.createdBy || !interestData.image || !interestData.interest) {
+            return res.status(400).json({ error: 'Required fields: createdBy, image, and interest' });
         }
 
-        // Create a new Interest
-        const newInterest: IInterest = new InterestModel({
-            icon,
-            title,
-            id,
-            likeCount: likeCount || 0, // If likeCount is not provided, default to 0
-        });
+        // Create a new interest using the Interest model
+        const newInterest = new InterestModel(interestData);
 
-        // Save the Interest to the database
-        await newInterest.save();
+        // Save the interest to the database
+        const savedInterest = await newInterest.save();
 
-        // Respond with the created Interest
-        return res.status(201).json(newInterest);
+        // Respond with the saved interest data
+        res.status(201).json(savedInterest);
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'An error occurred while creating interest.' });
+        // Handle any errors that occur during the creation process
+        console.error('Error creating interest:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
-export const getInterests = async (req: Request, res: Response) => {
-    try {
-        const { id, order } = req.query;
-        const date = typeof req.query.date === 'string' ? req.query.date : undefined;
+// export const getMostUsedInterests = async (req: Request, res: Response) => {
+//     try {
+//         // Retrieve all interests, ordered by the 'selected' field in descending order
+//         const interests = await InterestModel.find().sort({ selected: -1 }).exec();
 
-        // Build the query object
-        let query: any = {};
-        if (id) query.id = id;
-        if (date) query.date = { $gte: new Date(date) };
-
-        // Define the sort object
-        // Define the sort object
-        let sortObj: any = {};
-        if (order && order === 'mostLiked') sortObj.likeCount = -1; // Sort by likeCount in descending order
-        else if (order && order === 'id') sortObj.id = 1; // Sort by id in ascending order
-        else sortObj.date = -1; // Default sort by date in descending order
-
-        const interests = await InterestModel.find(query).sort(sortObj);
-
-        return res.status(200).json(interests);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'An error occurred while fetching interests' });
-    }
-};
+//         // Respond with the retrieved interests data
+//         res.status(200).json(interests);
+//     } catch (error) {
+//         // Handle any errors that occur during the retrieval process
+//         console.error('Error retrieving interests:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
 
 export const getMostUsedInterests = async (req: Request, res: Response) => {
     try {
-        // Using MongoDB's aggregation framework to get most used interests
         const mostUsedInterests = await EventModel.aggregate([
-            // Unwind the interests array into a stream of documents
             { $unwind: '$interests' },
-            // Group by interests title and count occurrences
             {
                 $group: {
                     _id: '$interests.title',
-                    count: { $sum: 1 },
+                    totalSelected: { $sum: '$interests.selected' },
+                    createdBy: { $first: '$interests.createdBy' },
                     icon: { $first: '$interests.icon' },
-                    id: { $first: '$interests.id' },
+                    image: { $first: '$interests.image' },
                     title: { $first: '$interests.title' },
-                    _interestId: { $first: '$interests._id' },
-                },
+                    selected: { $first: '$interests.selected' }
+                }
             },
-            // Sort by count descending to get most used interests first
-            { $sort: { count: -1 } },
-            // Optionally limit the number of results
-            // { $limit: 10 },
-            // Project the desired fields
-            {
-                $project: {
-                    _id: '$_interestId',
-                    title: 1,
-                    icon: 1,
-                    id: 1,
-                },
-            },
+            { $sort: { totalSelected: -1 } }
         ]);
 
-        // Send the response back to the client
-        res.status(200).json({
-            status: 'success',
-            data: mostUsedInterests,
-        });
+        res.status(200).json(mostUsedInterests);
     } catch (error) {
-        // Handle errors
-        console.error('Error fetching interests:', error);
-        res.status(500).json({
-            status: 'failure',
-            message: 'An error occurred while fetching the interests',
-        });
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };

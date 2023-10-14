@@ -2,9 +2,15 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 // Define the event interests subdocument schema
 const InterestSchema = new Schema({
-    icon: String,
-    title: String,
-    id: Number,
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User', // assuming you have a User model
+        required: true,
+    },
+    icon: { type: String, required: false },
+    image: { type: String, required: false },
+    title: { type: String, required: true },
+    selected: { type: Number, default: 0 },
 });
 
 // Define the location subdocument schema
@@ -40,7 +46,7 @@ const EventSchema = new Schema({
     price: { type: Number, required: true },
     currentAttendees: [PersonSchema],
     likedBy: [Schema.Types.Mixed], // To accommodate both string and number types
-    organizer: { type: PersonSchema, required: true },  // Adjusted to be an object and renamed
+    organizer: { type: PersonSchema, required: true }, // Adjusted to be an object and renamed
 });
 
 export interface IEvent extends Document {
@@ -52,9 +58,11 @@ export interface IEvent extends Document {
         coordinates: number[];
     };
     interests: {
+        createdBy: string; // MongoDB ObjectId is typically a string
         icon: string;
+        image: string;
         title: string;
-        id: number;
+        selected: number;
     }[];
     image: string;
     isPrivate: boolean;
@@ -74,7 +82,8 @@ export interface IEvent extends Document {
         profilePic: string;
     }[];
     likedBy: (string | number)[];
-    organizer: {  // Adjusted and renamed
+    organizer: {
+        // Adjusted and renamed
         _id: string | number;
         name: string;
         username: string;

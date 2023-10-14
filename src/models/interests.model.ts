@@ -1,36 +1,35 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IInterest extends Document {
+    createdBy: mongoose.Types.ObjectId | string;
+    icon: string;
+    image: string;
+    interest: string;
+    selected: number;
+}
+
 const InterestSchema = new Schema({
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'User', // Assuming you have a User model
+    },
     icon: {
         type: String,
-        required: true,
+        default: '',
     },
-    title: {
+    image: {
+        type: String,
+        required: false,
+    },
+    interest: {
         type: String,
         required: true,
-        unique: true,
     },
-    id: {
-        type: Number,
-        required: true,
-        unique: true,
-    },
-    likeCount: {
+    selected: {
         type: Number,
         default: 0,
     },
-    date: {
-        type: Date,
-        default: Date.now,
-    },
 });
 
-export interface IInterest extends Document {
-    icon: string;
-    title: string;
-    id: number;
-    likeCount: number;
-    date: Date;
-}
-
-export const InterestModel = mongoose.model<IInterest>('Interest', InterestSchema);
+export const InterestModel = mongoose.model('Interest', InterestSchema);
