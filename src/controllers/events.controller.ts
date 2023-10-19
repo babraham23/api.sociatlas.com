@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { EventModel, IEvent } from '../models/events.model';
+import { EventModel } from '../models/events.model';
 
 // Create an event
 export const createEvent = async (req: Request, res: Response) => {
+    console.log('createEvent', req.body);
     try {
         // Extract event data from the request body
-        const eventData: IEvent = req.body;
+        const eventData = req.body;
 
         // Validate the location object
         if (!eventData.location || !eventData.location.coordinates || eventData.location.coordinates.length !== 2) {

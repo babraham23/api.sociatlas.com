@@ -1,19 +1,79 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-// Define the event interests subdocument schema
-const InterestSchema = new Schema({
-    createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User', // assuming you have a User model
-        required: true,
-    },
-    icon: { type: String, required: false },
-    image: { type: String, required: false },
-    title: { type: String, required: true },
-    selected: { type: Number, default: 0 },
+interface Interest extends Document {
+    _id: string | number;
+    createdBy: string;
+    icon: string;
+    image: string;
+    title: string;
+    selected: number;
+    hidden?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+    totalSelected?: number;
+    __v?: number;
+}
+
+interface Invitee extends Document {
+    _id: number;
+    name: string;
+    username: string;
+    profilePic: string;
+}
+
+interface Organizer extends Document {
+    _id: string;
+    name: string;
+    username: string;
+}
+
+interface Event extends Document {
+    title: string;
+    description: string;
+    date: number;
+    location: {
+        address: string;
+        coordinates: [number, number];
+    };
+    interests: Interest[];
+    image: string;
+    isPrivate: boolean;
+    invitees: Invitee[];
+    additionalInfo: string;
+    maxCapacity: number;
+    price: number;
+    currentAttendees: string[];
+    likedBy: string[];
+    organizer: Organizer;
+}
+
+const InterestSchema = new Schema<Interest>({
+    _id: Schema.Types.Mixed,
+    createdBy: String,
+    icon: String,
+    image: String,
+    title: String,
+    selected: Number,
+    hidden: Boolean,
+    createdAt: Date,
+    updatedAt: Date,
+    totalSelected: Number,
+    __v: Number,
 });
 
-// Define the location subdocument schema
+const InviteeSchema = new Schema<Invitee>({
+    _id: Number,
+    name: String,
+    username: String,
+    profilePic: String,
+});
+
+const OrganizerSchema = new Schema<Organizer>({
+    _id: String,
+    name: String,
+    username: String,
+});
+
 const LocationSchema = new Schema({
     address: String,
     coordinates: {
@@ -23,72 +83,21 @@ const LocationSchema = new Schema({
     },
 });
 
-// Define the organizer and invitee subdocument schema
-const PersonSchema = new Schema({
-    _id: Schema.Types.Mixed, // To accommodate both string and number types
-    name: String,
-    username: String,
-    profilePic: String,
-});
-
-// Define the main event schema
-const EventSchema = new Schema({
-    title: { type: String, required: true },
+const EventSchema = new Schema<Event>({
+    title: String,
     description: String,
-    date: { type: Number, required: true },
+    date: Number,
     location: { type: LocationSchema, required: true },
     interests: [InterestSchema],
     image: String,
     isPrivate: Boolean,
-    invitees: [PersonSchema],
+    invitees: [InviteeSchema],
     additionalInfo: String,
-    maxCapacity: { type: Number, required: true },
-    price: { type: Number, required: true },
-    currentAttendees: [PersonSchema],
-    likedBy: [Schema.Types.Mixed], // To accommodate both string and number types
-    organizer: { type: PersonSchema, required: true }, // Adjusted to be an object and renamed
+    maxCapacity: Number,
+    price: Number,
+    currentAttendees: [String],
+    likedBy: [String],
+    organizer: OrganizerSchema,
 });
 
-export interface IEvent extends Document {
-    title: string;
-    description: string;
-    date: number;
-    location: {
-        address: string;
-        coordinates: number[];
-    };
-    interests: {
-        createdBy: string; // MongoDB ObjectId is typically a string
-        icon: string;
-        image: string;
-        title: string;
-        selected: number;
-    }[];
-    image: string;
-    isPrivate: boolean;
-    invitees: {
-        _id: string | number;
-        name: string;
-        username: string;
-        profilePic: string;
-    }[];
-    additionalInfo: string;
-    maxCapacity: number;
-    price: number;
-    currentAttendees: {
-        _id: string | number;
-        name: string;
-        username: string;
-        profilePic: string;
-    }[];
-    likedBy: (string | number)[];
-    organizer: {
-        // Adjusted and renamed
-        _id: string | number;
-        name: string;
-        username: string;
-        profilePic: string;
-    };
-}
-
-export const EventModel = mongoose.model<IEvent>('Event', EventSchema);
+export const EventModel = mongoose.model<Event>('Event', EventSchema);
