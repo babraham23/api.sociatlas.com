@@ -15,4 +15,7 @@ module.exports = function (app: any) {
 
     // check user name availability
     app.post('/api/user/checkUsernameAvailability', user.checkUsernameAvailability);
+
+    // search user
+    app.post('/api/user/searchForUser', user.searchForUser);
 };

@@ -6,7 +6,14 @@ import jwt from 'jsonwebtoken';
 let secretKey = 'sociatlas';
 
 export const registerUser = async (req: Request, res: Response) => {
+    console.log('req body -->', JSON.stringify(req.body))
     try {
+        // Check if the email already exists
+        const existingUser = await UserModel.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(409).json({ error: 'Email already exists' }); // 409 Conflict
+        }
+
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
         const user: IUser = new UserModel({
@@ -27,6 +34,7 @@ export const registerUser = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'An error occurred while registering the user' });
     }
 };
+
 
 export const loginUser = async (req: Request, res: Response) => {
     try {
@@ -143,5 +151,40 @@ export const checkUsernameAvailability = async (req: Request, res: Response) => 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'An error occurred while checking username availability' });
+    }
+};
+
+// ADD TO CLIENT 
+export const searchForUser = async (req: Request, res: Response) => {
+    // Get the search term from the request body
+
+    const { searchTerm } = req.body;
+
+    if (!searchTerm) {
+        return res.status(400).json({ error: 'Search term is required' });
+    }
+
+    try {
+        // Use a regex to perform a case-insensitive search
+        const searchRegex = new RegExp(searchTerm, 'i');
+
+        // Search for users by name or username using the $or operator
+        const users = await UserModel.find({
+            $or: [
+                { name: { $regex: searchRegex } },
+                { username: { $regex: searchRegex } },
+            ],
+        });
+
+        // If no users are found, return a message
+        if (users.length === 0) {
+            return res.status(404).json({ message: 'No users found' });
+        }
+
+        // Return the list of users
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while searching for users' });
     }
 };
