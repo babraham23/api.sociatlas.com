@@ -30,6 +30,7 @@ app.use(express.static('static'));
 require('./routes/events.routes.ts')(app);
 require('./routes/interests.routes.ts')(app);
 require('./routes/user.routes.ts')(app);
+require('./routes/friends.routes.ts')(app);
 
 // Setting up HTTP and WebSocket server on the same port
 const server = http.createServer(app);

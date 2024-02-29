@@ -12,4 +12,10 @@ module.exports = function (app: any) {
 
     // getInterestsByCreator
     app.get('/api/interests/getInterestsByCreator/:userId', interests.getInterestsByCreator);
+
+    // getInterests
+    app.get('/api/interests/getInterests', interests.getInterests);
+
+    // getScrollBarData
+    app.get('/api/interests/getScrollBarData', interests.getScrollBarData);
 };

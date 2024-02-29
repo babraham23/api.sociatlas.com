@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 let secretKey = 'sociatlas';
 
 export const registerUser = async (req: Request, res: Response) => {
-    console.log('req body -->', JSON.stringify(req.body))
     try {
         // Check if the email already exists
         const existingUser = await UserModel.findOne({ email: req.body.email });
@@ -34,7 +33,6 @@ export const registerUser = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'An error occurred while registering the user' });
     }
 };
-
 
 export const loginUser = async (req: Request, res: Response) => {
     try {
@@ -110,7 +108,7 @@ export const editUser = async (req: Request, res: Response) => {
         if ('profilePic' in req.body) {
             updates.profilePic = profilePic;
         }
-        
+
         // If updating password, ensure it's hashed before saving
         if (password) {
             updates.password = await bcrypt.hash(password, 10);
@@ -154,10 +152,8 @@ export const checkUsernameAvailability = async (req: Request, res: Response) => 
     }
 };
 
-// ADD TO CLIENT 
 export const searchForUser = async (req: Request, res: Response) => {
-    // Get the search term from the request body
-
+    console.log(req.body);
     const { searchTerm } = req.body;
 
     if (!searchTerm) {
@@ -165,23 +161,16 @@ export const searchForUser = async (req: Request, res: Response) => {
     }
 
     try {
-        // Use a regex to perform a case-insensitive search
         const searchRegex = new RegExp(searchTerm, 'i');
 
-        // Search for users by name or username using the $or operator
         const users = await UserModel.find({
-            $or: [
-                { name: { $regex: searchRegex } },
-                { username: { $regex: searchRegex } },
-            ],
-        });
+            $or: [{ name: { $regex: searchRegex } }, { username: { $regex: searchRegex } }],
+        }).populate('friends');
 
-        // If no users are found, return a message
         if (users.length === 0) {
             return res.status(404).json({ message: 'No users found' });
         }
 
-        // Return the list of users
         res.status(200).json(users);
     } catch (error) {
         console.error(error);

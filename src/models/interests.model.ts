@@ -7,6 +7,7 @@ export interface IInterest extends Document {
     title: string;
     selected: number;
     hidden: boolean;
+    orderIndex: number;
 }
 
 const InterestSchema = new Schema(
@@ -36,6 +37,11 @@ const InterestSchema = new Schema(
         hidden: {
             type: Boolean,
             default: false,
+        },
+        orderIndex: {
+            type: Number,
+            default: 0,
+            required: false,
         },
     },
     {

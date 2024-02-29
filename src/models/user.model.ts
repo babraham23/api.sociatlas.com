@@ -50,6 +50,12 @@ const UserSchema = new Schema({
         type: Date,
         required: true, // set to false if it's optional
     },
+    friends: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+        },
+    ],
 });
 
 // Create and export the User model
@@ -62,6 +68,7 @@ export interface IUser extends Document {
     profilePic: string | null;
     password: string;
     dateOfBirth: Date;
+    friends: IUser['_id'][]; // Array of user IDs representing friends
 }
 
 export const UserModel = mongoose.model<IUser>('User', UserSchema);

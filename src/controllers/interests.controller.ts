@@ -5,7 +5,7 @@ import { EventModel } from '../models/events.model';
 export const createInterest = async (req: Request, res: Response) => {
     try {
         // Extract interest data from the request body
-        const { createdBy, icon, image, title, selected, hidden }: IInterest = req.body;
+        const { createdBy, icon, image, title, selected, hidden, orderIndex = 100 }: IInterest = req.body;
 
         // Validate the interest data
         if (!createdBy || !title) {
@@ -26,6 +26,7 @@ export const createInterest = async (req: Request, res: Response) => {
             title,
             selected,
             hidden,
+            orderIndex: orderIndex !== undefined ? orderIndex : 100, // Use the provided orderIndex or default to 100 if undefined
         });
 
         // Save the interest to the database
@@ -111,3 +112,71 @@ export const getInterestsByCreator = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+// getInterests
+export const getInterests = async (req: Request, res: Response) => {
+    try {
+        // Find all interests and sort them by orderIndex in ascending order
+        const interests = await InterestModel.find().sort('orderIndex');
+
+        // If no interests found, return a 404 with a message
+        if (!interests.length) {
+            return res.status(404).send({ message: 'No interests found.' });
+        }
+
+        // Successfully return the sorted interests
+        return res.status(200).json(interests);
+    } catch (error) {
+        // If an error occurs, return a 500 status code with the error message
+        return res.status(500).send(error);
+    }
+};
+
+export const getScrollBarData = async (req: Request, res: Response) => {
+    try {
+        // Find the first three interests sorted by orderIndex
+        const topThreeInterests = await InterestModel.find().sort('orderIndex').limit(5);
+
+        // Get the most used interests from the database
+        const mostUsedInterestsAggregation = await EventModel.aggregate([
+            { $unwind: '$interests' },
+            {
+                $group: {
+                    _id: '$interests._id', // Group by the interest's actual _id
+                    totalSelected: { $sum: '$interests.selected' },
+                    createdBy: { $first: '$interests.createdBy' },
+                    icon: { $first: '$interests.icon' },
+                    image: { $first: '$interests.image' },
+                    title: { $first: '$interests.title' },
+                    selected: { $first: '$interests.selected' },
+                },
+            },
+            { $sort: { totalSelected: -1 } },
+        ]);
+
+        // Combine the interests, using a Map to eliminate duplicates by title and _id
+        const interestsMap = new Map();
+
+        // Add the top three interests to the map
+        topThreeInterests.forEach(interest => {
+            interestsMap.set(interest.title, interest);
+        });
+
+        // Add the most used interests to the map, checking for duplicates by title and _id
+        mostUsedInterestsAggregation.forEach(interest => {
+            if (!interestsMap.has(interest.title) || !interestsMap.get(interest.title)._id.equals(interest._id)) {
+                interestsMap.set(interest.title, interest);
+            }
+        });
+
+        // Convert the map values back to an array
+        const combinedInterests = Array.from(interestsMap.values());
+
+        // Send the combined and deduplicated interests array in the response
+        res.status(200).json(combinedInterests);
+    } catch (error) {
+        console.error('Error getting scroll bar data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
