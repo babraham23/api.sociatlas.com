@@ -93,8 +93,6 @@ export const getAllFriendRequests = async (req: Request, res: Response) => {
             status: 'pending',
         }).populate('sender', 'name username profilePic _id'); // Populating with additional fields from the UserModel
 
-        console.log('Invitations:', invitations); // Debug log
-
         if (!invitations.length) {
             return res.status(404).json({ message: 'No friend requests found.' });
         }
