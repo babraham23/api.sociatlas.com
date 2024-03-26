@@ -1,5 +1,6 @@
 import { ChatMessageModel } from '../models/chatmessage.model';
 import { ChatRoomModel } from '../models/chatroom.model'; // Update path as needed
+import { LocationChatRoomModel } from '../models/locationChatroom.model';
 
 const createChatRoom = async (socket: any, name: string, userId: string, friendId: string) => {
     if (!userId || !friendId) {
@@ -20,7 +21,11 @@ const createChatRoom = async (socket: any, name: string, userId: string, friendI
         if (existingRoom) {
             console.log('Room already exists, navigating to the room');
             socket.join(existingRoom.name);
-            return existingRoom;
+            // Return a message and the existing room's ID
+            return {
+                message: 'Room already exists',
+                roomId: existingRoom._id,
+            };
         }
 
         // If room doesn't exist, create a new one with one of the identifiers
@@ -31,9 +36,10 @@ const createChatRoom = async (socket: any, name: string, userId: string, friendI
             identifier: identifier1, // Use the first identifier as standard
         });
 
-        // socket.join(newRoom.name);
         await newRoom.save();
-        // Post-save logic
+        // Post-save logic like joining the room
+        socket.join(newRoom.name);
+        // You may also return the new room details here, if needed
     } catch (error) {
         console.error('Error creating new chat room', error);
     }
@@ -41,7 +47,6 @@ const createChatRoom = async (socket: any, name: string, userId: string, friendI
 
 // Get messages for a room
 const getRoomById = async (socket: any, roomId: string) => {
-    console.log('Fetching messages for room', roomId);
     try {
         const roomMessages = await ChatMessageModel.find({ roomId }).exec();
         socket.emit('listenForRoomMessages', roomMessages);
@@ -68,4 +73,46 @@ const getUserChatRooms = async (req: any, res: any): Promise<void> => {
     }
 };
 
-export { createChatRoom, getUserChatRooms, getRoomById };
+const createLocationChatRoom = async (req: any, res: any) => {
+    const { name, lat, lng, creatorId, members } = req.body;
+
+    if (!lat || !lng) {
+        console.error('Latitude or Longitude is missing');
+        return res.status(400).send('Latitude or Longitude is missing');
+    }
+
+    if (!creatorId || members.length === 0) {
+        console.error('Creator ID or members list is missing');
+        return res.status(400).send('Creator ID or members list is missing');
+    }
+
+    try {
+        // Check if a room with this latitude and longitude already exists
+        const existingRoom = await LocationChatRoomModel.findOne({
+            lat,
+            lng,
+        });
+
+        if (existingRoom) {
+            console.log('Room already exists at this location.');
+            return res.status(400).json({ message: 'Room already exists at this location' });
+        }
+
+        // If room doesn't exist, create a new one
+        const newRoom = new LocationChatRoomModel({
+            name,
+            lat,
+            lng,
+            creator: creatorId,
+            members: members,
+        });
+
+        await newRoom.save();
+        res.status(201).json(newRoom); // Send the new room details as a response
+    } catch (error) {
+        console.error('Error creating new location chat room', error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+export { createChatRoom, getUserChatRooms, getRoomById, createLocationChatRoom };

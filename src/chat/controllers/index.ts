@@ -1,31 +1,40 @@
 import { createChatRoom, getRoomById } from './chatroom.controller';
 import { NewMessageData, newMessageController } from './chatmessage.controller';
+import { NewLocationChatMessageData, newLocationChatMessageController } from './LocationChatMessage.controller';
+import { getLocationChatRoomById } from './locationChatroom.controller';
 
 const handleSocketConnection = (socket: any, io: any): void => {
     console.log(`⚡: ${socket.id} user just connected!`);
 
     //  ---------- Joining a room ----------
     socket.on('joinRoom', (roomId: string) => {
-        console.log('Joining room', roomId);
+        console.log('Is this even needed? - ', roomId);
         socket.join(roomId);
     });
 
     //  ---------- Create room ----------
     socket.on('createRoom', (name: string, userId: string, friendId: string) => {
-        console.log('Create room', name, userId, friendId);
         createChatRoom(socket, name, userId, friendId);
     });
 
     // ---------- Get room by id ----------
     socket.on('getRoomById', async (roomId: string) => {
-        console.log('Get room by id', roomId);
         getRoomById(socket, roomId);
     });
 
     //  ---------- New message ----------
     socket.on('newMessage', async (data: NewMessageData) => {
-        console.log('New message received', data);
         newMessageController(data);
+    });
+
+    // ---------- Get locatoin chat room by id ----------
+    socket.on('getLocationChatRoomById', async (roomId: string) => {
+        getLocationChatRoomById(socket, roomId);
+    });
+
+    // ---------- New location message ----------
+    socket.on('newlocationChatMessage', async (data: NewLocationChatMessageData) => {
+        newLocationChatMessageController(data);
     });
 
     // ---------- Disconnect ----------

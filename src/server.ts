@@ -31,7 +31,6 @@ require('./routes/events.routes.ts')(app);
 require('./routes/interests.routes.ts')(app);
 require('./routes/user.routes.ts')(app);
 require('./routes/friends.routes.ts')(app);
-require('./chat/routes/chatgptmessage.routes')(app);
 
 // ----------------- Chat -----------------
 
