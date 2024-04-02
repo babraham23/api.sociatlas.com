@@ -1,3 +1,4 @@
+require('dotenv').config();
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
@@ -9,7 +10,7 @@ import { handleSocketConnection } from './chat/controllers';
 
 const app = express();
 
-const CONNECTON_STRING = 'mongodb+srv://brettabraham23:ODOhf6o5eHQZqvmC@sociatlas.mlt8mpc.mongodb.net/';
+const CONNECTON_STRING = process.env.API_KEY as string;
 
 mongoose.connect(CONNECTON_STRING);
 
