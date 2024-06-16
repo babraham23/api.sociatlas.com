@@ -2,8 +2,6 @@ require('dotenv').config();
 import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-
-// Chat imports
 import http from 'http';
 import socketIO from 'socket.io';
 import { handleSocketConnection } from './chat/controllers';
@@ -32,11 +30,10 @@ require('./routes/events.routes.ts')(app);
 require('./routes/interests.routes.ts')(app);
 require('./routes/user.routes.ts')(app);
 require('./routes/friends.routes.ts')(app);
-
-// ----------------- Chat -----------------
+require('./routes/droppin.routes.ts')(app);
+require('./chat/routes/chat.routes.ts')(app);  // Moved here
 
 // Chat connection
-// Setting up HTTP and WebSocket server on the same port
 const server = http.createServer(app);
 const PORT: number = 3000;
 
@@ -50,8 +47,6 @@ const io = new socketIO.Server(server, {
 io.on('connection', (socket: any) => {
     handleSocketConnection(socket, io);
 });
-// Chat routes
-require('./chat/routes/chat.routes.ts')(app);
 
 server.listen(PORT, () => {
     console.log(`⚡️⚡️Socket connected on port ${PORT}⚡️⚡️`);
