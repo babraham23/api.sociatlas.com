@@ -1,48 +1,59 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IDroppin extends Document {
-    droppin: string;
-    image?: string;
-    icon?: string;
-    title?: string;
-    coordinates: {
-        latitude: number;
-        longitude: number;
+    title: string;
+    description: string;
+    date: number;
+    coords: {
+        address: string;
+        coordinates: [number, number];
     };
+    droppin: string;
+    createdBy: {
+        _id: string;
+        name: string;
+        username: string;
+    };
+    interests: Array<{
+        _id: string;
+        icon: string;
+        image: string;
+        title: string;
+        hidden: boolean;
+    }>;
 }
 
-const DroppinSchema = new Schema(
-    {
-        droppin: {
-            type: String,
-            required: true,
-        },
-        image: {
-            type: String,
-            default: '',
-        },
-        icon: {
-            type: String,
-            default: '',
-        },
-        title: {
-            type: String,
-            default: '',
-        },
-        coordinates: {
-            latitude: {
-                type: Number,
-                required: true,
-            },
-            longitude: {
-                type: Number,
-                required: true,
-            },
-        },
-    },
-    {
-        timestamps: true,
-    }
-);
+const InterestSchema = new Schema({
+    _id: Schema.Types.Mixed,
+    icon: String,
+    image: String,
+    title: String,
+    hidden: Boolean,
+});
 
-export const DroppinModel = mongoose.model<IDroppin>('Droppin', DroppinSchema);
+const CoordsSchema = new Schema({
+    address: String,
+    coordinates: {
+        type: [Number],
+        required: true,
+        index: '2dsphere',
+    },
+});
+
+const CreatorSchema = new Schema({
+    _id: String,
+    name: String,
+    username: String,
+});
+
+const DroppinSchema = new Schema({
+    title: String,
+    description: String,
+    date: Number,
+    coords: { type: CoordsSchema, required: true },
+    droppin: String,
+    createdBy: CreatorSchema,
+    interests: [InterestSchema],
+});
+
+export default mongoose.model<IDroppin>('Droppin', DroppinSchema);

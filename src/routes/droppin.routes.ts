@@ -3,4 +3,7 @@ module.exports = function (app: any) {
 
     // Create a droppin
     app.post('/api/droppin/createDroppin', droppins.createDroppin);
+
+    // // getDroppinsWithinRadius
+    app.post('/api/droppin/getDroppins', droppins.getDroppins);
 };

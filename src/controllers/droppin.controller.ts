@@ -1,47 +1,63 @@
 import { Request, Response } from 'express';
-import { DroppinModel } from '../models/droppin.model';
+import droppinModel from '../models/droppin.model';
+import { errorResponse, successResponse } from '../utils/response.class';
 
-// Create a droppin
-export const createDroppin = async (req: Request, res: Response) => {
-    console.log('createDroppin', req.body);
+// Controller to create a new Droppin
+export const createDroppin = async (req: Request, res: Response): Promise<void> => {
     try {
-        // Extract droppin data from the request body
-        const droppinData = req.body;
+        const { title, description, date, coords, droppin, createdBy, interests } = req.body;
 
-        // Validate the droppin data
-        if (!droppinData.droppin) {
-            return res.status(400).json({ error: 'Droppin is required' });
-        }
+        const newDroppin = new droppinModel({
+            title,
+            description,
+            date,
+            coords,
+            droppin,
+            createdBy,
+            interests,
+        });
 
-        if (!droppinData.coordinates || typeof droppinData.coordinates.latitude !== 'number' || typeof droppinData.coordinates.longitude !== 'number') {
-            return res.status(400).json({ error: 'Coordinates with latitude and longitude are required' });
-        }
-
-        // Create a new droppin using the Droppin model
-        const newDroppin = new DroppinModel(droppinData);
-
-        // Save the droppin to the database
         const savedDroppin = await newDroppin.save();
 
-        // Respond with the saved droppin data
-        res.status(200).json(savedDroppin);
+        res.status(201).json(successResponse(savedDroppin));
     } catch (error) {
-        // Handle any errors that occur during the creation process
-        console.error('Error creating droppin:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json(errorResponse((error as any).message));
     }
 };
 
-export const getAllDroppins = async (req: Request, res: Response) => {
+export const getDroppins = async (req: Request, res: Response) => {
     try {
-        // Fetch all droppins from the database
-        const droppins = await DroppinModel.find();
+        const { latitude, longitude, interestTitle, maxDistance, droppin } = req.body;
 
-        // Respond with the list of droppins in JSON format
-        res.status(200).json(droppins);
-    } catch (error) {
-        // Handle any errors that occur during the fetch process
-        console.error('Error fetching droppins:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        if (!latitude || !longitude) {
+            return res.status(400).json(errorResponse('Missing latitude or longitude parameters'));
+        }
+
+        let query: any = {
+            'coords.coordinates': {
+                $near: {
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: [parseFloat(latitude as string), parseFloat(longitude as string)],
+                    },
+                    $maxDistance: maxDistance ? parseFloat(maxDistance as string) : 16093.4,
+                },
+            },
+        };
+
+        if (interestTitle) {
+            query['interests.title'] = { $regex: new RegExp(`^${interestTitle}$`, 'i') };
+        }
+
+        if (droppin) {
+            query['droppin'] = droppin;
+        }
+
+        const droppins = await droppinModel.find(query);
+
+        res.status(200).json(successResponse(droppins));
+    } catch (error: any) {
+        console.error('Error fetching nearby droppins:', error);
+        res.status(500).json(errorResponse('Internal Server Error', error.message));
     }
 };
