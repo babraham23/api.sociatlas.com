@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { InterestModel, IInterest } from '../models/interests.model'; // Ensure correct import path
 import { EventModel } from '../models/events.model';
+import { errorResponse, successResponse } from '../utils/response.class';
 
 export const createInterest = async (req: Request, res: Response) => {
     try {
@@ -121,20 +122,20 @@ export const getInterests = async (req: Request, res: Response) => {
 
         // If no interests found, return a 404 with a message
         if (!interests.length) {
-            return res.status(404).send({ message: 'No interests found.' });
+            return res.status(404).json(errorResponse('No interests found.'));
         }
 
         // Successfully return the sorted interests
-        return res.status(200).json(interests);
-    } catch (error) {
+        return res.status(200).json(successResponse(interests));
+    } catch (error: any) {
         // If an error occurs, return a 500 status code with the error message
-        return res.status(500).send(error);
+        return res.status(500).json(errorResponse('Internal Server Error', error.message));
     }
 };
 
 export const getScrollBarData = async (req: Request, res: Response) => {
     try {
-        // Find the first three interests sorted by orderIndex
+        // Find the first five interests sorted by orderIndex
         const topThreeInterests = await InterestModel.find().sort('orderIndex').limit(5);
 
         // Get the most used interests from the database
@@ -157,13 +158,13 @@ export const getScrollBarData = async (req: Request, res: Response) => {
         // Combine the interests, using a Map to eliminate duplicates by title and _id
         const interestsMap = new Map();
 
-        // Add the top three interests to the map
-        topThreeInterests.forEach(interest => {
+        // Add the top five interests to the map
+        topThreeInterests.forEach((interest) => {
             interestsMap.set(interest.title, interest);
         });
 
         // Add the most used interests to the map, checking for duplicates by title and _id
-        mostUsedInterestsAggregation.forEach(interest => {
+        mostUsedInterestsAggregation.forEach((interest) => {
             if (!interestsMap.has(interest.title) || !interestsMap.get(interest.title)._id.equals(interest._id)) {
                 interestsMap.set(interest.title, interest);
             }
@@ -173,10 +174,9 @@ export const getScrollBarData = async (req: Request, res: Response) => {
         const combinedInterests = Array.from(interestsMap.values());
 
         // Send the combined and deduplicated interests array in the response
-        res.status(200).json(combinedInterests);
-    } catch (error) {
+        return res.status(200).json(successResponse(combinedInterests));
+    } catch (error: any) {
         console.error('Error getting scroll bar data:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json(errorResponse('Internal Server Error', error.message));
     }
 };
-

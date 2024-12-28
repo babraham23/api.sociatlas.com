@@ -10,7 +10,6 @@ export type NewMessageData = {
 };
 
 const newMessageController = async (data: NewMessageData) => {
-    console.log('New message received:', data);
     const { room_id, message, user } = data;
 
     const newMessage = new ChatMessageModel({

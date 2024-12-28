@@ -1,3 +1,4 @@
+import { LocationChatMessageModel } from '../../models/locationChatMessage.model';
 import { ChatMessageModel } from '../models/chatmessage.model';
 import { ChatRoomModel } from '../models/chatroom.model'; // Update path as needed
 import { LocationChatRoomModel } from '../models/locationChatroom.model';
@@ -115,4 +116,15 @@ const createLocationChatRoom = async (req: any, res: any) => {
     }
 };
 
-export { createChatRoom, getUserChatRooms, getRoomById, createLocationChatRoom };
+// Get messages for a room
+const getLocationChatRoomById = async (socket: any, roomId: string) => {
+    console.log('getLocationChatRoomById', roomId);
+    try {
+        const roomMessages = await LocationChatMessageModel.find({ roomId }).exec();
+        socket.emit('listenForLocationChatRoomMessages', roomMessages);
+    } catch (error) {
+        console.error('Error fetching messages for room', roomId, error);
+    }
+};
+
+export { createChatRoom, getUserChatRooms, getRoomById, createLocationChatRoom, getLocationChatRoomById };

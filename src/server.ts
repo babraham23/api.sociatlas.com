@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import http from 'http';
 import socketIO from 'socket.io';
 import { handleSocketConnection } from './chat/controllers';
+import { DirectMessageSocket } from './sockets/directMessageSocket';
 
 const app = express();
 
@@ -13,7 +14,7 @@ const CONNECTON_STRING = process.env.API_KEY as string;
 mongoose.connect(CONNECTON_STRING);
 
 mongoose.connection.once('open', function () {
-    console.log('🔥🔥Successfully connected to the database🔥🔥');
+    console.log('🔥🔥🔥🔥 API Connected to DB', CONNECTON_STRING);
 });
 
 mongoose.connection.on('error', function () {
@@ -31,7 +32,7 @@ require('./routes/interests.routes.ts')(app);
 require('./routes/user.routes.ts')(app);
 require('./routes/friends.routes.ts')(app);
 require('./routes/droppin.routes.ts')(app);
-require('./chat/routes/chat.routes.ts')(app);  // Moved here
+require('./chat/routes/chat.routes.ts')(app); // Moved here
 
 // Chat connection
 const server = http.createServer(app);
@@ -45,11 +46,13 @@ const io = new socketIO.Server(server, {
 
 // Chat socket connection
 io.on('connection', (socket: any) => {
-    handleSocketConnection(socket, io);
+    // handleSocketConnection(socket, io);
+    // handleLocationChatSocket(socket, io);
+    DirectMessageSocket(socket, io);
 });
 
 server.listen(PORT, () => {
-    console.log(`⚡️⚡️Socket connected on port ${PORT}⚡️⚡️`);
+    console.log(`🍦🍦🍦🍦 Server Live on port ${PORT}`);
 });
 
 export default app;

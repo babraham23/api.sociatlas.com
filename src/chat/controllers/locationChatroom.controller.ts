@@ -1,8 +1,9 @@
-import { LocationChatMessageModel } from '../models/locationChatMessage.model';
+import { LocationChatMessageModel } from '../../models/locationChatMessage.model';
 import { LocationChatRoomModel } from '../models/locationChatroom.model';
+import { Server, Socket } from 'socket.io';
 
 const createLocationChatRoom = async (req: any, res: any) => {
-    console.log('Creating new location chat room', req.body);
+    // console.log('Creating new location chat room', req.body);
     const { name, location, creatorId, members } = req.body;
 
     // Basic validation
@@ -45,6 +46,7 @@ const createLocationChatRoom = async (req: any, res: any) => {
 
 // Get messages for a room
 const getLocationChatRoomById = async (socket: any, roomId: string) => {
+    // console.log('getLocationChatRoomById', roomId);
     try {
         const roomMessages = await LocationChatMessageModel.find({ roomId }).exec();
         socket.emit('listenForLocationChatRoomMessages', roomMessages);
@@ -82,4 +84,24 @@ const getLocationChatRooms = async (req: any, res: any) => {
     }
 };
 
-export { createLocationChatRoom, getLocationChatRooms, getLocationChatRoomById };
+const handleNewLocationChatMessage = async (io: Server, socket: Socket, data: any) => {
+    try {
+        const { room_id, message, user } = data;
+
+        // Create and save the new message
+        const newMessage = new LocationChatMessageModel({
+            roomId: room_id,
+            text: message,
+            user: user,
+        });
+        await newMessage.save();
+
+        // Emit the new message to all clients in the room
+        io.to(room_id).emit('newLocationChatMessage', newMessage);
+    } catch (error) {
+        console.error('Error handling new location chat message:', error);
+        socket.emit('error', 'Failed to send message');
+    }
+};
+
+export { createLocationChatRoom, getLocationChatRooms, getLocationChatRoomById, handleNewLocationChatMessage };

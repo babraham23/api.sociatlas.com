@@ -3,9 +3,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IDroppin extends Document {
     title: string;
     description: string;
-    date: number;
+    startDate: number;
     coords: {
-        address: string;
         coordinates: [number, number];
     };
     droppin: string;
@@ -16,23 +15,19 @@ export interface IDroppin extends Document {
     };
     interests: Array<{
         _id: string;
-        icon: string;
-        image: string;
         title: string;
-        hidden: boolean;
     }>;
+    createdAt?: Date;
+    updatedAt?: Date;
+    additionalInfo?: string;
 }
 
 const InterestSchema = new Schema({
     _id: Schema.Types.Mixed,
-    icon: String,
-    image: String,
     title: String,
-    hidden: Boolean,
 });
 
 const CoordsSchema = new Schema({
-    address: String,
     coordinates: {
         type: [Number],
         required: true,
@@ -46,14 +41,18 @@ const CreatorSchema = new Schema({
     username: String,
 });
 
-const DroppinSchema = new Schema({
-    title: String,
-    description: String,
-    date: Number,
-    coords: { type: CoordsSchema, required: true },
-    droppin: String,
-    createdBy: CreatorSchema,
-    interests: [InterestSchema],
-});
+const DroppinSchema = new Schema(
+    {
+        title: String,
+        description: String,
+        startDate: Number,
+        coords: { type: CoordsSchema, required: true },
+        droppin: String,
+        createdBy: CreatorSchema,
+        interests: [InterestSchema],
+        additionalInfo: String,
+    },
+    { timestamps: true }
+);
 
 export default mongoose.model<IDroppin>('Droppin', DroppinSchema);

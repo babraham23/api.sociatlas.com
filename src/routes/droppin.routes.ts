@@ -6,4 +6,7 @@ module.exports = function (app: any) {
 
     // // getDroppinsWithinRadius
     app.post('/api/droppin/getDroppins', droppins.getDroppins);
+
+    // getDroppinsByMostUsedInterest
+    app.get('/api/droppin/getDroppinsByMostUsedInterest', droppins.getDroppinsByMostUsedInterest);
 };
