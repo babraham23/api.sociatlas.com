@@ -6,11 +6,11 @@ import { newLocationChatMessageController, NewLocationChatMessageData } from '..
 const handleSocketConnection = (socket: any, io: any): void => {
     console.log(`🔌🔌🔌🔌 Socket Live ${socket.id}`);
 
-    // //  ---------- Joining a room ----------
-    // socket.on('joinRoom', (roomId: string) => {
-    //     console.log('📥 joinRoom called:', { roomId, socketId: socket.id });
-    //     socket.join(roomId);
-    // });
+    //  ---------- Joining a room ----------
+    socket.on('joinRoom', (roomId: string) => {
+        console.log('📥 joinRoom called:', { roomId, socketId: socket.id });
+        socket.join(roomId);
+    });
 
     //  ---------- Create room ----------
     socket.on('createRoom', (name: string, userId: string, friendId: string) => {
@@ -20,7 +20,7 @@ const handleSocketConnection = (socket: any, io: any): void => {
 
     // ---------- Get room by id ----------
     socket.on('getRoomById', async (roomId: string) => {
-        // console.log('🔍 getRoomById called:', { roomId, socketId: socket.id });
+        console.log('🔍 getRoomById called:', { roomId, socketId: socket.id });
         getRoomById(socket, roomId);
     });
 

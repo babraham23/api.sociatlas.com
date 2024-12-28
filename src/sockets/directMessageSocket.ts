@@ -5,7 +5,6 @@ const DirectMessageSocket = (socket: any, io: any): void => {
 
     // ---------- Get room by id ----------
     socket.on('getRoomById', async (roomId: string) => {
-        console.log('🔍 getRoomById called:', { roomId, socketId: socket.id });
         getRoomById(socket, roomId);
     });
 
