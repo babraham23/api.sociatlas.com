@@ -1,5 +1,6 @@
 import { ChatMessageModel } from '../chat/models/chatmessage.model';
-import { DirectMessageModel } from '../models/directMessage.model';
+import { ChatRoomModel } from '../chat/models/chatroom.model';
+import { DirectMessageModel } from '../models/directMessage.model'; // We need to switch to this before we
 
 /*
 1. Get messages for a room
@@ -45,4 +46,28 @@ const newDirectMessageController = async (data: NewMessageData) => {
     }
 };
 
-export { getRoomById, newDirectMessageController };
+/**
+
+Get users Direct Messages
+
+ */
+
+const getUsersDirectMessageRooms = async (req: any, res: any): Promise<void> => {
+    try {
+        const userId = req.query.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+
+        // Find rooms where the user is a member
+        const rooms = await ChatRoomModel.find({ members: userId });
+
+        res.json(rooms);
+    } catch (error) {
+        console.error('Error fetching chat rooms', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+export { getRoomById, newDirectMessageController, getUsersDirectMessageRooms };
