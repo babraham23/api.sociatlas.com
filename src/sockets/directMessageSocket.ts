@@ -13,6 +13,11 @@ const DirectMessageSocket = (socket: any, io: any): void => {
         console.log('💬 newMessage called:', { data, socketId: socket.id });
         newDirectMessageController(data);
     });
+
+    // 1. Create DM chat room - 2 Create Location chat room
+
+
+    // 2. Get all DM chat rooms
 };
 
 export { DirectMessageSocket };
